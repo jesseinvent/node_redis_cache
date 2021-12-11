@@ -1,0 +1,20 @@
+{
+  "name": "node_redis_cache",
+  "version": "1.0.0",
+  "description": "Cache with redis in nodejs",
+  "main": "src/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon src/app.js"
+  },
+  "author": "Jesse Ojih",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "redis": "^4.0.0",
+    "response-time": "^2.3.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}
