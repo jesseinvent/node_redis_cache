@@ -1,82 +1,27 @@
-const express = require("express");
-const axios = require("axios");
-const redis = require("redis");
-const responstTime = require("response-time");
-const { promisify } = require("util");
+const express = require('express');
+const morgan = require('morgan');
+const responseTime = require('response-time');
+const { app: config } = require('./config/index');
+const AppError = require('./error/AppError');
+const globalErrorHandler = require('./error/globalErrorHandler');
+const rocketRouter = require('./routes/rocketRoutes');
 
 const app = express();
 
-const PORT = process.env.PORT || 3000;
+if (config.app.env !== 'production') app.use(morgan('dev'));
 
-/* RESPONSE TIME MIDDLEWARE
-Adds a header in the response object
-that indicates how long it took for
-the request to be processed
-*/
-app.use(responstTime());
+app.use(responseTime());
 
-const client = redis.createClient({
-  host: "127.0.0.1",
-  port: 6379,
+app.get('/', (req, res, next) => {
+  res.send('Hello world');
 });
 
-client.connect();
+app.use('/api/v1/rockets', rocketRouter);
 
-app.get("/rockets", async (req, res, next) => {
-  try {
-    const cacheReply = await client.get("rockets");
-
-    if (cacheReply) {
-      console.log("Using cached data");
-      return res.send(JSON.parse(cacheReply));
-    }
-    const response = await axios.get(`https://api.spacexdata.com/v3/rockets`);
-
-    const saveResult = await client.set(
-      "rockets",
-      JSON.stringify(response.data),
-      {
-        EX: 15,
-      }
-    );
-
-    console.log("New data cached", saveResult);
-
-    return res.send(response.data);
-  } catch (error) {
-    res.send(error.message);
-  }
+app.all('*', (req, res, next) => {
+  next(new AppError(`Can't find ${req.originalUrl} on this Server!`, 404));
 });
 
-app.get("/rockets/:rocker_id", async (req, res, next) => {
-  try {
-    const { rocker_id } = req.params;
-    const cacheReply = await client.get(rocker_id );
+app.use(globalErrorHandler);
 
-    if (cacheReply) {
-      console.log("Using cached data");
-      return res.send(JSON.parse(cacheReply));
-    }
-    const response = await axios.get(
-      `https://api.spacexdata.com/v3/rockets/${rocker_id}`
-    );
-
-    const saveResult = await client.set(
-      rocker_id,
-      JSON.stringify(response.data),
-      {
-        EX: 15,
-      }
-    );
-
-    console.log("New data cached", saveResult);
-
-    return res.send(response.data);
-  } catch (error) {
-    res.send(error.message);
-  }
-});
-
-app.listen(PORT, () =>
-  console.log(`Server up and listening on http://localhost/${PORT}`)
-);
+module.exports = app;
