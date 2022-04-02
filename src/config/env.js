@@ -1,5 +1,3 @@
-const dotenv = require('dotenv-safe');
+const dotenv = require('dotenv');
 
-const { config } = dotenv;
-
-config({ path: '.env' });
+dotenv.config();

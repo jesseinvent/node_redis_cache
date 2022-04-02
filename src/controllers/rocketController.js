@@ -13,8 +13,10 @@ const validateResponse = (response, res) => {
   }
 };
 
+const client = redisClient();
+
 exports.index = catchAsyncHandler(async (req, res, next) => {
-  const retrieveRocketsFromCache = await redisClient.get('rockets');
+  const retrieveRocketsFromCache = await client.get('rockets');
   if (retrieveRocketsFromCache) {
     return res.status(200).json({
       status: true,
@@ -28,7 +30,7 @@ exports.index = catchAsyncHandler(async (req, res, next) => {
 
   validateResponse(response, res);
 
-  const cacheRocketData = await redisClient.set(
+  const cacheRocketData = await client.set(
     'rockets',
     JSON.stringify(response.data),
     {
@@ -47,7 +49,7 @@ exports.index = catchAsyncHandler(async (req, res, next) => {
 });
 
 exports.show = catchAsyncHandler(async (req, res, next) => {
-  const getRocketByIdFromCache = await redisClient.get(req.params.id);
+  const getRocketByIdFromCache = await client.get(req.params.id);
 
   if (getRocketByIdFromCache) {
     return res.status(200).json({
@@ -64,7 +66,7 @@ exports.show = catchAsyncHandler(async (req, res, next) => {
 
   validateResponse(response, res);
 
-  const cacheRocketData = await redisClient.set(
+  const cacheRocketData = await client.set(
     req.params.id,
     JSON.stringify(response.data),
     {

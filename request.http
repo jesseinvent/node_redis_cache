@@ -1,0 +1,4 @@
+### MAKE API REQUEST
+GET http://localhost:4000/api/v1/rockets
+Content-Type: application/json
+Accept: application/json
